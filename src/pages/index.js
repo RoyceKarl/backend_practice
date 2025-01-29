@@ -6,6 +6,7 @@ import { useFormik, Formik, Form, Field } from "formik";
 import yup from "yup";
 import { signupValidation } from "./signupValidation";
 import axios from "axios";
+import { useState } from "react"; // Add this line
 
 const initialValues = {
   name: "",
@@ -15,19 +16,25 @@ const initialValues = {
 };
 
 function App() {
+  const [file, setFile] = useState(null);
+
   const handleSubmit = async (values, actions) => {
-    console.log("Form Submitted:");
-    const payload = {
-      name: values.name,
-      email: values.email,
-      password: values.password,
-      cpassword: values.cpassword,
-    };
+    console.log("Form Submitted:", values);
+
+    const formData = new FormData();
+    formData.append("name", values.name);
+    formData.append("email", values.email);
+    formData.append("password", values.password);
+    formData.append("cpassword", values.cpassword);
+    formData.append("file", file);
+
     axios
-      .post("http://localhost:3001/", payload)
+      .post("http://localhost:3001/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
       .then((res) => {
         console.log(res);
-        prompt("Uploaded successfully", JSON.stringify(res));
+        alert("Uploaded successfully");
       })
       .catch((err) => console.log(err));
   };
@@ -65,6 +72,10 @@ function App() {
             <br />
             {errors.cpassword && <small>{errors.cpassword}</small>}
             <br />
+
+            <input type="file" onChange={(e) => setFile(e.target.files[0])} />
+            <br />
+
             <button type="submit">submit</button>
           </Form>
         )}
